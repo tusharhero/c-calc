@@ -1,0 +1,5 @@
+#+title: README for c-calc
+#+author: tusharhero
+#+email: tusharhero@sdf.org
+* C-calc
+A Calculator written in C.
