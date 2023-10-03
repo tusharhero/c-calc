@@ -13,5 +13,3 @@ Which would be a string in our code, =5 + 2 - 1=. We will ignore any
 spaces or white space. Hence, our user inputted string would become,
 =5+2-1=. After this, we will need to identify the operators? And then
 the operands for them.
-** Finding the operators.
-Using =strtok= function, find the places where we have, the operators.

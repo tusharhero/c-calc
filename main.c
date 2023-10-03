@@ -36,7 +36,7 @@ struct token_stream {
 };
 
 bool is_in_set(char character, const char *set_string) {
-  for (int i = 0; i < strlen(set_string); ++i) {
+  for (int i = 0; i < (int)strlen(set_string); ++i) {
     if (character == set_string[i]) {
       return true;
     }
@@ -50,10 +50,10 @@ struct token_stream tokenizer(char *expression) {
   const char *digits = "123456790";
 
   // making a copy of the expression.
-  token_stream.source = malloc(strlen(expression));
+  token_stream.source = malloc(strlen(expression) + 1);
   strcpy(token_stream.source, expression);
   // allocate more memory to tokens.
-  token_stream.tokens = malloc(strlen(expression) * 2);
+  token_stream.tokens = malloc(strlen(expression) * 5);
 
   // allocating memory to a number.
   char *number_string = malloc(strlen(expression) * 2);
@@ -90,10 +90,17 @@ struct token_stream tokenizer(char *expression) {
       ++source_index;
     }
   }
+
+  // Free all the memory allocations
+  free(number_string);
+  free(token_stream.tokens);
+  free(token_stream.source);
+
   token_stream.number_of_tokens = tokens_index - 1;
   return token_stream;
 }
 
 int main(void) {
+  tokenizer("2+4+1+3+3-4");
   return 0;
 }
