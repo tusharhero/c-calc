@@ -46,7 +46,7 @@ bool is_in_set(char character, const char *set_string) {
 
 struct token_stream tokenizer(char *expression) {
   struct token_stream token_stream;
-  const char *operators = "+-";
+  const char *operators = "+-*/";
   const char *digits = "123456790";
 
   // making a copy of the expression.
@@ -91,16 +91,34 @@ struct token_stream tokenizer(char *expression) {
     }
   }
 
-  // Free all the memory allocations
-  free(number_string);
-  free(token_stream.tokens);
-  free(token_stream.source);
-
   token_stream.number_of_tokens = tokens_index - 1;
   return token_stream;
 }
 
+int calc(struct token_stream token_stream) {
+  int sum = token_stream.tokens[0].number;
+  char current_operation = token_stream.tokens[1].operator;
+  for (int i = 2; i < token_stream.number_of_tokens; i += 1) {
+    if (i % 2 == 0) {
+      if (current_operation == '+') {
+        sum = sum + token_stream.tokens[i].number;
+      }
+      if (current_operation == '-') {
+        sum = sum - token_stream.tokens[i].number;
+      }
+      if (current_operation == '*') {
+        sum = sum * token_stream.tokens[i].number;
+      }
+      if (current_operation == '/') {
+        sum = sum / token_stream.tokens[i].number;
+      }
+    } else {
+      current_operation = token_stream.tokens[i].operator;
+    }
+  }
+  return sum;
+}
+
 int main(void) {
-  tokenizer("2+4+1+3+3-4");
   return 0;
 }
