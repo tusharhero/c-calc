@@ -55,7 +55,7 @@ struct token_stream tokenizer(char *expression) {
   // allocate more memory to tokens.
   token_stream.tokens = malloc(strlen(expression) * 2);
 
-  // allocating memory to a number
+  // allocating memory to a number.
   char *number_string = malloc(strlen(expression) * 2);
 
   // loop through the expression, and put all the tokens seperately in
