@@ -32,6 +32,7 @@ union token {
 struct token_stream {
   char *source;
   union token *tokens;
+  int number_of_tokens;
 };
 
 bool is_in_set(char character, const char *set_string) {
@@ -63,7 +64,7 @@ struct token_stream tokenizer(char *expression) {
   bool is_operator = false;
   char current_character;
   int source_index = 0, tokens_index = 0, number_index = 0;
-  int string_length = (int) strlen(token_stream.source);
+  int string_length = (int)strlen(token_stream.source);
   while (source_index <= string_length) {
     current_character = token_stream.source[source_index];
 
@@ -71,12 +72,12 @@ struct token_stream tokenizer(char *expression) {
     is_operator = is_in_set(current_character, operators);
     if (is_operator || (source_index == string_length)) {
       if (number_index != 0) {
-	number_string[number_index + 1] = 0;
-	token_stream.tokens[tokens_index] = (union token)atoi(number_string);
-	is_digits = 0;
-	number_index = 0;
-	free(number_string);
-	number_string = malloc(strlen(expression) * 2);
+        number_string[number_index + 1] = 0;
+        token_stream.tokens[tokens_index] = (union token)atoi(number_string);
+        is_digits = 0;
+        number_index = 0;
+        free(number_string);
+        number_string = malloc(strlen(expression) * 2);
       } else {
         token_stream.tokens[tokens_index] = (union token)current_character;
         ++source_index;
@@ -89,6 +90,7 @@ struct token_stream tokenizer(char *expression) {
       ++source_index;
     }
   }
+  token_stream.number_of_tokens = tokens_index - 1;
   return token_stream;
 }
 
