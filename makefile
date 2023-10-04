@@ -10,3 +10,6 @@ run : a.out
 	./a.out
 clean : a.out
 	rm a.out
+pedantic: main.c
+	gcc -pedantic main.c
+	./a.out

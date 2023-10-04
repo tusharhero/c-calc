@@ -44,18 +44,19 @@ struct token_stream {
 
 union token atot(char *token_string) {
   if (token_string[0] == '+') {
-    return (union token)(enum symbol)addition;
+    return (union token){.operator = addition};
   }
   if (token_string[0] == '-') {
-    return (union token)(enum symbol)subtraction;
+    return (union token){.operator = subtraction};
   }
   if (token_string[0] == '*') {
-    return (union token)(enum symbol)multiplication;
+    return (union token){.operator = multiplication};
   }
   if (token_string[0] == '/') {
-    return (union token)(enum symbol)division;
+    return (union token){.operator = division};
   } else {
-    return (union token)(atoi(token_string) + (int)sizeof(enum symbol));
+    return (union token){.number =
+                             atoi(token_string) + (int)sizeof(enum symbol)};
   }
 }
 
