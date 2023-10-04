@@ -44,16 +44,16 @@ struct token_stream {
 
 union token atot(char *token_string) {
   if (token_string[0] == '+') {
-    return (union token){.operator = addition};
+    return (union token){.operator= addition };
   }
   if (token_string[0] == '-') {
-    return (union token){.operator = subtraction};
+    return (union token){.operator= subtraction };
   }
   if (token_string[0] == '*') {
-    return (union token){.operator = multiplication};
+    return (union token){.operator= multiplication };
   }
   if (token_string[0] == '/') {
-    return (union token){.operator = division};
+    return (union token){.operator= division };
   } else {
     return (union token){.number =
                              atoi(token_string) + (int)sizeof(enum symbol)};
@@ -81,10 +81,10 @@ struct token_stream *tokenizer(char *expression) {
   const char *digits = "1234567890";
 
   // making a copy of the expression.
-  token_stream-> source = malloc(strlen(expression) + 1);
-  strcpy(token_stream-> source, expression);
+  token_stream->source = malloc(strlen(expression) + 1);
+  strcpy(token_stream->source, expression);
   // allocate more memory to tokens.
-  token_stream-> tokens = malloc(strlen(expression) * 5);
+  token_stream->tokens = malloc(strlen(expression) * 5);
 
   // allocating memory to a number.
   char *number_string = malloc(strlen(expression) * 2);
@@ -95,22 +95,22 @@ struct token_stream *tokenizer(char *expression) {
   bool is_operator = false;
   char current_character;
   int source_index = 0, tokens_index = 0, number_index = 0;
-  int string_length = (int)strlen(token_stream-> source);
+  int string_length = (int)strlen(token_stream->source);
   while (source_index <= string_length) {
-    current_character = token_stream-> source[source_index];
+    current_character = token_stream->source[source_index];
 
     is_digits = is_in_set(current_character, digits);
     is_operator = is_in_set(current_character, operators);
     if (is_operator || (source_index == string_length)) {
       if (number_index != 0) {
         number_string[number_index + 1] = 0;
-        token_stream-> tokens[tokens_index] = atot(number_string);
+        token_stream->tokens[tokens_index] = atot(number_string);
         is_digits = 0;
         number_index = 0;
         free(number_string);
         number_string = malloc(strlen(expression) * 2);
       } else {
-        token_stream-> tokens[tokens_index] = atot(&current_character);
+        token_stream->tokens[tokens_index] = atot(&current_character);
         ++source_index;
       }
       ++tokens_index;
@@ -124,7 +124,7 @@ struct token_stream *tokenizer(char *expression) {
 
   free(number_string);
 
-  token_stream-> number_of_tokens = tokens_index - 1;
+  token_stream->number_of_tokens = tokens_index - 1;
   return token_stream;
 }
 
@@ -155,8 +155,8 @@ double calc_tokens(struct token_stream token_stream) {
 double calc(char *expression) {
   struct token_stream *token_stream = tokenizer(expression);
   double calculated_value = calc_tokens(*token_stream);
-  free(token_stream-> source);
-  free(token_stream-> tokens);
+  free(token_stream->source);
+  free(token_stream->tokens);
   free(token_stream);
   return calculated_value;
 }
