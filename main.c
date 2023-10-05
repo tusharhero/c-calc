@@ -25,46 +25,26 @@
 #include <string.h>
 
 enum symbol {
-  addition = 0,
-  subtraction = 1,
-  multiplication = 2,
-  division = 3,
+  addition = '+',
+  subtraction = '-',
+  multiplication = '*',
+  division = '/',
 };
 
-union token {
-  enum symbol operator;
-  int number;
+typedef struct token token;
+struct token {
+  union {
+    enum symbol operator;
+    int number;
+  } token_value;
+  enum { number, operator} tag;
 };
 
+typedef struct token_stream token_stream;
 struct token_stream {
-  char *source;
-  union token *tokens;
+  token *tokens;
   int number_of_tokens;
 };
-
-union token atot(char *token_string) {
-  if (token_string[0] == '+') {
-    return (union token){.operator= addition };
-  }
-  if (token_string[0] == '-') {
-    return (union token){.operator= subtraction };
-  }
-  if (token_string[0] == '*') {
-    return (union token){.operator= multiplication };
-  }
-  if (token_string[0] == '/') {
-    return (union token){.operator= division };
-  } else {
-    return (union token){.number =
-                             atoi(token_string) + (int)sizeof(enum symbol)};
-  }
-}
-
-int ttoi(union token number_token) {
-  return number_token.number > (int)sizeof(enum symbol)
-             ? number_token.number - (int)sizeof(enum symbol)
-             : -1;
-}
 
 bool is_in_set(char character, const char *set_string) {
   for (int i = 0; i < (int)strlen(set_string); ++i) {
@@ -75,16 +55,13 @@ bool is_in_set(char character, const char *set_string) {
   return false;
 }
 
-struct token_stream *tokenizer(char *expression) {
-  struct token_stream *token_stream = malloc(sizeof(struct token_stream));
+token_stream *tokenizer(char *expression) {
+  token_stream *token_stream = malloc(sizeof(struct token_stream));
   const char *operators = "+-*/";
   const char *digits = "1234567890";
 
-  // making a copy of the expression.
-  token_stream->source = malloc(strlen(expression) + 1);
-  strcpy(token_stream->source, expression);
   // allocate more memory to tokens.
-  token_stream->tokens = malloc(strlen(expression) * 5);
+  token_stream->tokens = malloc(strlen(expression) * 10);
 
   // allocating memory to a number.
   char *number_string = malloc(strlen(expression) * 2);
@@ -95,22 +72,26 @@ struct token_stream *tokenizer(char *expression) {
   bool is_operator = false;
   char current_character;
   int source_index = 0, tokens_index = 0, number_index = 0;
-  int string_length = (int)strlen(token_stream->source);
+  int string_length = (int)strlen(expression);
   while (source_index <= string_length) {
-    current_character = token_stream->source[source_index];
+    current_character = expression[source_index];
 
     is_digits = is_in_set(current_character, digits);
     is_operator = is_in_set(current_character, operators);
     if (is_operator || (source_index == string_length)) {
       if (number_index != 0) {
         number_string[number_index + 1] = 0;
-        token_stream->tokens[tokens_index] = atot(number_string);
+        token_stream->tokens[tokens_index].token_value.number =
+            atoi(number_string);
+        token_stream->tokens[tokens_index].tag = number;
         is_digits = 0;
         number_index = 0;
         free(number_string);
         number_string = malloc(strlen(expression) * 2);
       } else {
-        token_stream->tokens[tokens_index] = atot(&current_character);
+        token_stream->tokens[tokens_index].token_value.operator=
+            current_character;
+        token_stream->tokens[tokens_index].tag = operator;
         ++source_index;
       }
       ++tokens_index;
@@ -128,34 +109,41 @@ struct token_stream *tokenizer(char *expression) {
   return token_stream;
 }
 
-double calc_tokens(struct token_stream token_stream) {
-  double sum = (double)ttoi(token_stream.tokens[0]);
-  char current_operation = token_stream.tokens[1].operator;
-  for (int i = 2; i < token_stream.number_of_tokens; i += 1) {
-    if (i % 2 == 0) {
-      if (current_operation == (enum symbol)addition) {
-        sum += ttoi(token_stream.tokens[i]);
-      }
-      if (current_operation == (enum symbol)subtraction) {
-        sum -= ttoi(token_stream.tokens[i]);
-      }
-      if (current_operation == (enum symbol)multiplication) {
-        sum *= ttoi(token_stream.tokens[i]);
-      }
-      if (current_operation == (enum symbol)division) {
-        sum /= ttoi(token_stream.tokens[i]);
-      }
+double calc_tokens(token_stream token_stream) {
+  enum symbol current_operation;
+  double sum = 0.0;
+  token current_token;
+  for (int i = 0; i < token_stream.number_of_tokens; ++i) {
+    current_token = token_stream.tokens[i];
+    if (current_token.tag == operator) {
+      current_operation = current_token.token_value.operator;
     } else {
-      current_operation = token_stream.tokens[i].operator;
+      switch (current_operation) {
+      case addition: {
+        sum += current_token.token_value.number;
+        break;
+      }
+      case subtraction: {
+        sum -= current_token.token_value.number;
+        break;
+      }
+      case multiplication: {
+        sum *= current_token.token_value.number;
+        break;
+      }
+      case division: {
+        sum /= current_token.token_value.number;
+        break;
+      }
+      }
     }
   }
   return sum;
 }
 
 double calc(char *expression) {
-  struct token_stream *token_stream = tokenizer(expression);
+  token_stream *token_stream = tokenizer(expression);
   double calculated_value = calc_tokens(*token_stream);
-  free(token_stream->source);
   free(token_stream->tokens);
   free(token_stream);
   return calculated_value;
