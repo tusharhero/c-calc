@@ -42,7 +42,8 @@ struct token
   } token_value;
   enum
   {
-    number, operator} tag;
+    number, operator
+  } tag;
 };
 
 typedef struct token_stream token_stream;
@@ -55,12 +56,12 @@ struct token_stream
 bool
 is_in_set (char character, const char *set_string)
 {
-  for (int i = 0; i < (int)strlen (set_string); ++i)
+  for (int i = 0; i < (int) strlen (set_string); ++i)
     {
       if (character == set_string[i])
-        {
-          return true;
-        }
+	{
+	  return true;
+	}
     }
   return false;
 }
@@ -84,7 +85,7 @@ tokenizer (char *expression)
   bool is_operator = false;
   char current_character;
   int source_index = 0, tokens_index = 0, number_index = 0;
-  int string_length = (int)strlen (expression);
+  int string_length = (int) strlen (expression);
   while (source_index <= string_length)
     {
       current_character = expression[source_index];
@@ -92,33 +93,33 @@ tokenizer (char *expression)
       is_digits = is_in_set (current_character, digits);
       is_operator = is_in_set (current_character, operators);
       if (is_operator || (source_index == string_length))
-        {
-          if (number_index != 0)
-            {
-              number_string[number_index + 1] = 0;
-              token_stream->tokens[tokens_index].token_value.number
-                  = atoi (number_string);
-              token_stream->tokens[tokens_index].tag = number;
-              is_digits = 0;
-              number_index = 0;
-              free (number_string);
-              number_string = malloc (strlen (expression) * 2);
-            }
-          else
-            {
-              token_stream->tokens[tokens_index].token_value.
-              operator= current_character;
-              token_stream->tokens[tokens_index].tag = operator;
-              ++source_index;
-            }
-          ++tokens_index;
-        }
+	{
+	  if (number_index != 0)
+	    {
+	      number_string[number_index + 1] = 0;
+	      token_stream->tokens[tokens_index].token_value.number
+		= atoi (number_string);
+	      token_stream->tokens[tokens_index].tag = number;
+	      is_digits = 0;
+	      number_index = 0;
+	      free (number_string);
+	      number_string = malloc (strlen (expression) * 2);
+	    }
+	  else
+	    {
+	      token_stream->tokens[tokens_index].
+		token_value.operator= current_character;
+	      token_stream->tokens[tokens_index].tag = operator;
+	      ++source_index;
+	    }
+	  ++tokens_index;
+	}
       if (is_digits)
-        {
-          number_string[number_index] = current_character;
-          ++number_index;
-          ++source_index;
-        }
+	{
+	  number_string[number_index] = current_character;
+	  ++number_index;
+	  ++source_index;
+	}
     }
 
   free (number_string);
@@ -137,35 +138,35 @@ calc_tokens (token_stream token_stream)
     {
       current_token = token_stream.tokens[i];
       if (current_token.tag == operator)
-        {
-          current_operation = current_token.token_value.operator;
-        }
+	{
+	  current_operation = current_token.token_value.operator;
+	}
       else
-        {
-          switch (current_operation)
-            {
-            case addition:
-              {
-                sum += current_token.token_value.number;
-                break;
-              }
-            case subtraction:
-              {
-                sum -= current_token.token_value.number;
-                break;
-              }
-            case multiplication:
-              {
-                sum *= current_token.token_value.number;
-                break;
-              }
-            case division:
-              {
-                sum /= current_token.token_value.number;
-                break;
-              }
-            }
-        }
+	{
+	  switch (current_operation)
+	    {
+	    case addition:
+	      {
+		sum += current_token.token_value.number;
+		break;
+	      }
+	    case subtraction:
+	      {
+		sum -= current_token.token_value.number;
+		break;
+	      }
+	    case multiplication:
+	      {
+		sum *= current_token.token_value.number;
+		break;
+	      }
+	    case division:
+	      {
+		sum /= current_token.token_value.number;
+		break;
+	      }
+	    }
+	}
     }
   return sum;
 }
