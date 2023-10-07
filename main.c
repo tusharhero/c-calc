@@ -24,27 +24,25 @@
 #include <stdlib.h>
 #include <string.h>
 
-enum symbol {
+enum Symbol {
   addition = '+',
   subtraction = '-',
   multiplication = '*',
   division = '/',
 };
 
-typedef struct token token;
-struct token {
+typedef struct token {
   union {
-    enum symbol operator;
+    enum Symbol operator;
     int number;
   } token_value;
   enum { number, operator} tag;
-};
+} Token;
 
-typedef struct token_stream token_stream;
-struct token_stream {
-  token *tokens;
+typedef struct token_stream {
+  Token *tokens;
   int number_of_tokens;
-};
+}TokenStream;
 
 bool is_in_set(char character, const char *set_string) {
   for (int i = 0; i < (int)strlen(set_string); ++i) {
@@ -55,8 +53,8 @@ bool is_in_set(char character, const char *set_string) {
   return false;
 }
 
-token_stream *tokenizer(char *expression) {
-  token_stream *token_stream = malloc(sizeof(struct token_stream));
+TokenStream *tokenizer(char *expression) {
+  TokenStream *token_stream = malloc(sizeof(struct token_stream));
   const char *operators = "+-*/";
   const char *digits = "1234567890";
 
@@ -109,14 +107,16 @@ token_stream *tokenizer(char *expression) {
   return token_stream;
 }
 
-double calc_tokens(token_stream token_stream) {
-  enum symbol current_operation;
+double calc_tokens(TokenStream token_stream) {
+  enum Symbol current_operation;
   double sum = 0.0;
-  token current_token;
+  Token current_token;
   for (int i = 0; i < token_stream.number_of_tokens; ++i) {
     current_token = token_stream.tokens[i];
     if (current_token.tag == operator) {
       current_operation = current_token.token_value.operator;
+    } else if (i == 0 && current_token.tag == number) {
+      sum += current_token.token_value.number;
     } else {
       switch (current_operation) {
       case addition: {
@@ -142,7 +142,7 @@ double calc_tokens(token_stream token_stream) {
 }
 
 double calc(char *expression) {
-  token_stream *token_stream = tokenizer(expression);
+  TokenStream *token_stream = tokenizer(expression);
   double calculated_value = calc_tokens(*token_stream);
   free(token_stream->tokens);
   free(token_stream);
