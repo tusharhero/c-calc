@@ -1,15 +1,13 @@
 test : main.c
 	gcc -Wall main.c
 	./a.out
-sanitize : main.c
+build-sanitize : main.c
 	gcc -g3 -fsanitize=address,undefined main.c
-	./a.out
 build : main.c
-	gcc -g3 -fsanitize=address,undefined main.c
-run : a.out
-	./a.out
+	gcc -g -Wall main.c
 clean : a.out
 	rm a.out
-pedantic: main.c
+build-pedantic: main.c
 	gcc -pedantic main.c
+run : ./a.out
 	./a.out

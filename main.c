@@ -32,7 +32,7 @@ enum Symbol
   division = '/',
 };
 
-typedef struct token
+typedef struct
 {
   union
   {
@@ -44,7 +44,7 @@ typedef struct token
     number, operator} tag;
 } Token;
 
-typedef struct token_stream
+typedef struct
 {
   Token *tokens;
   int number_of_tokens;
@@ -65,16 +65,18 @@ is_in_set (char character, const char *set_string)
 
 TokenStream *
 tokenizer (char *expression)
-{				/*  */
-  TokenStream *token_stream = malloc (sizeof (struct token_stream));
+{
+  TokenStream *token_stream = malloc (sizeof (TokenStream));
   const char *operators = "+-*/";
   const char *digits = "1234567890";
 
   // allocate more memory to tokens.
-  token_stream->tokens = malloc (strlen (expression) * 10);
+  int token_mem_alloc = strlen (expression) * sizeof (char);
+  token_stream->tokens = malloc (token_mem_alloc);
 
   // allocating memory to a number.
-  char *number_string = malloc (strlen (expression) * 2);
+  int numstr_mem_alloc = strlen (expression) * sizeof (char);
+  char *number_string = malloc (numstr_mem_alloc);
 
   // loop through the expression, and put all the tokens seperately in
   // the tokens array in our struct.
@@ -91,6 +93,17 @@ tokenizer (char *expression)
       is_operator = is_in_set (current_character, operators);
       if (is_operator || (source_index == string_length))
         {
+          if (tokens_index == token_mem_alloc)
+            {
+              token_mem_alloc *= 2;
+              token_stream->tokens
+                  = realloc (token_stream->tokens, token_mem_alloc);
+            }
+          if (number_index == numstr_mem_alloc)
+            {
+              numstr_mem_alloc *= 2;
+              number_string = realloc (number_string, numstr_mem_alloc);
+            }
           if (number_index != 0)
             {
               number_string[number_index + 1] = 0;
@@ -182,9 +195,37 @@ calc (char *expression)
   return calculated_value;
 }
 
+char *
+get_line ()
+{
+  int alloc_size = 1024;
+  char *line_ptr = realloc (NULL, sizeof (char) * alloc_size);
+  int character;
+  int isEOF = false;
+  int index;
+  for (index = 0; ((character = getchar ()) != '\n'); ++index)
+    {
+      if (isEOF) {return NULL;}
+      if (character == EOF){isEOF = true;}
+      if (index == alloc_size)
+        {
+          alloc_size *= 2;
+          line_ptr = realloc (line_ptr, sizeof (char) * alloc_size);
+        }
+      line_ptr[index] = character;
+    }
+  line_ptr[index] = 0;
+  return line_ptr;
+}
+
 int
 main (void)
 {
-  printf ("%f\n", calc ("6-6+1/2+1*2"));
+  char *input_line;
+  while ((input_line = get_line ()) != NULL)
+    {
+      printf ("%s\n", input_line);
+      free (input_line);
+    }
   return 0;
 }
