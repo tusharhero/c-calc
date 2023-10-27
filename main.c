@@ -218,6 +218,7 @@ calc_token_parens (TokenStream token_stream)
     }
   else
     {
+      TokenStream *sliced_token_stream;
       size_t starting_index = -1;
       size_t ending_index = -1;
       bool in_parens = false;
@@ -254,12 +255,11 @@ calc_token_parens (TokenStream token_stream)
                 {
                   ending_index = index;
 
-                  TokenStream *sliced_token_stream = slice_token_stream (
+                  sliced_token_stream = slice_token_stream (
                       token_stream, starting_index + 1, ending_index);
 
                   new_token_stream->tokens[new_token_stream->number_of_tokens]
-                      = (Token){ .token_value.number
-                                 = (int)calc_token_arithmetic (
+                      = (Token){ .token_value.number = (int)calc_token_parens (
                                      *sliced_token_stream),
                                  .tag = number };
                   new_token_stream->number_of_tokens++;
