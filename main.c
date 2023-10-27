@@ -182,9 +182,34 @@ calc (char *expression)
   return calculated_value;
 }
 
+char *
+get_line ()
+{
+  size_t alloc_size = 256;
+  char *line = malloc (sizeof (char) * alloc_size);
+  size_t size = 0;
+  int character;
+  while ((character = getchar ()) != '\n' && character != EOF)
+    {
+      if (size > alloc_size)
+        {
+          alloc_size *= 2;
+          line = realloc (line, sizeof (char) * alloc_size);
+        }
+      line[size] = character;
+      ++size;
+    }
+  line[size] = 0;
+  return line;
+}
+
 int
 main (void)
 {
-  printf ("%f\n", calc ("6-6+1/2+1*2"));
+  char *input_line;
+  while ((input_line = get_line ())[0] != 0)
+    {
+      printf ("%f\n", calc (input_line));
+    }
   return 0;
 }
