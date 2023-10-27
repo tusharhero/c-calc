@@ -9,5 +9,5 @@ run_input: input a.out
 	./a.out < input
 clean : a.out
 	rm a.out
-pedantic: main.c run
+pedantic: main.c 
 	gcc -pedantic main.c

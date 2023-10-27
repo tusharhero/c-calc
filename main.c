@@ -30,6 +30,8 @@ enum Symbol
   subtraction = '-',
   multiplication = '*',
   division = '/',
+  paren_open = '(',
+  paren_close = ')',
 };
 
 typedef struct token
@@ -47,7 +49,7 @@ typedef struct token
 typedef struct token_stream
 {
   Token *tokens;
-  int number_of_tokens;
+  size_t number_of_tokens;
 } TokenStream;
 
 bool
@@ -64,10 +66,27 @@ is_in_set (char character, const char *set_string)
 }
 
 TokenStream *
+slice_token_stream (TokenStream token_stream, size_t starting_index,
+                    size_t ending_index)
+{
+  size_t alloc_size = token_stream.number_of_tokens;
+  TokenStream *sliced_token_stream = malloc (sizeof (TokenStream));
+  sliced_token_stream->tokens = malloc (sizeof (Token) * alloc_size);
+  sliced_token_stream->number_of_tokens = ending_index - starting_index;
+  for (size_t index = 0; index < sliced_token_stream->number_of_tokens;
+       ++index)
+    {
+      sliced_token_stream->tokens[index]
+          = token_stream.tokens[index + starting_index];
+    }
+  return sliced_token_stream;
+}
+
+TokenStream *
 tokenizer (char *expression)
-{				/*  */
+{
   TokenStream *token_stream = malloc (sizeof (struct token_stream));
-  const char *operators = "+-*/";
+  const char *operators = "+-*/()";
   const char *digits = "1234567890";
 
   // allocate more memory to tokens.
@@ -125,13 +144,13 @@ tokenizer (char *expression)
   return token_stream;
 }
 
-double
-calc_tokens (TokenStream token_stream)
+int
+calc_token_arithmetic (TokenStream token_stream)
 {
   enum Symbol current_operation;
   double sum = 0.0;
   Token current_token;
-  for (int i = 0; i < token_stream.number_of_tokens; ++i)
+  for (size_t i = 0; i < token_stream.number_of_tokens; ++i)
     {
       current_token = token_stream.tokens[i];
       if (current_token.tag == operator)
@@ -172,11 +191,103 @@ calc_tokens (TokenStream token_stream)
   return sum;
 }
 
+size_t
+get_no_of_parens (TokenStream token_stream)
+{
+  size_t no_of_parens = 0;
+  for (size_t i = 0; i < token_stream.number_of_tokens; ++i)
+    {
+      if (token_stream.tokens[i]
+              .token_value.
+              operator== paren_open && token_stream.tokens[i]
+              .tag ==
+              operator)
+        {
+          ++no_of_parens;
+        }
+    }
+  return no_of_parens;
+}
+
+double
+calc_token_parens (TokenStream token_stream)
+{
+  if (get_no_of_parens (token_stream) == 0)
+    {
+      return calc_token_arithmetic (token_stream);
+    }
+  else
+    {
+      size_t starting_index = -1;
+      size_t ending_index = -1;
+      bool in_parens = false;
+
+      size_t alloc_size = 256;
+      TokenStream *new_token_stream = malloc (sizeof (TokenStream));
+      new_token_stream->tokens = malloc (sizeof (Token) * alloc_size);
+      new_token_stream->number_of_tokens = 0;
+
+      for (size_t index = 0; index < token_stream.number_of_tokens; ++index)
+        {
+          if (alloc_size < index)
+            {
+              alloc_size *= 2;
+              new_token_stream->tokens = realloc (new_token_stream->tokens,
+                                                  sizeof (Token) * alloc_size);
+            }
+          if (token_stream.tokens[index].tag == operator)
+            {
+              if (token_stream.tokens[index].token_value.operator== paren_open)
+                {
+                  in_parens = true;
+                  starting_index = index;
+                }
+              if (token_stream.tokens[index].token_value.
+                  operator== paren_close)
+                {
+                  in_parens = false;
+                }
+            }
+          if (!in_parens)
+            {
+              if (starting_index != (size_t)-1)
+                {
+                  ending_index = index;
+
+                  TokenStream *sliced_token_stream = slice_token_stream (
+                      token_stream, starting_index + 1, ending_index);
+
+                  new_token_stream->tokens[new_token_stream->number_of_tokens]
+                      = (Token){ .token_value.number
+                                 = (int)calc_token_arithmetic (
+                                     *sliced_token_stream),
+                                 .tag = number };
+                  new_token_stream->number_of_tokens++;
+
+                  free (sliced_token_stream);
+                  starting_index = -1;
+                }
+              else
+                {
+                  new_token_stream->tokens[new_token_stream->number_of_tokens]
+                      = token_stream.tokens[index];
+                  new_token_stream->number_of_tokens++;
+                }
+            }
+        }
+
+      double answer = calc_token_arithmetic (*new_token_stream);
+      free (new_token_stream->tokens);
+      free (new_token_stream);
+      return answer;
+    }
+}
+
 double
 calc (char *expression)
 {
   TokenStream *token_stream = tokenizer (expression);
-  double calculated_value = calc_tokens (*token_stream);
+  double calculated_value = calc_token_parens (*token_stream);
   free (token_stream->tokens);
   free (token_stream);
   return calculated_value;
