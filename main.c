@@ -52,6 +52,12 @@ typedef struct token_stream
   size_t number_of_tokens;
 } TokenStream;
 
+typedef struct
+{
+  size_t *array;
+  size_t length;
+} Stack;
+
 bool
 is_in_set (char character, const char *set_string)
 {
@@ -228,6 +234,15 @@ calc_token_parens (TokenStream token_stream)
       new_token_stream->tokens = malloc (sizeof (Token) * alloc_size);
       new_token_stream->number_of_tokens = 0;
 
+      Stack *opening_stack = malloc (sizeof (Stack));
+      opening_stack->array
+          = malloc (sizeof (size_t) * token_stream.number_of_tokens);
+      opening_stack->length = 0;
+      Stack *closing_stack = malloc (sizeof (Stack));
+      closing_stack->array
+          = malloc (sizeof (size_t) * token_stream.number_of_tokens);
+      closing_stack->length = 0;
+
       for (size_t index = 0; index < token_stream.number_of_tokens; ++index)
         {
           if (alloc_size < index)
@@ -241,12 +256,19 @@ calc_token_parens (TokenStream token_stream)
               if (token_stream.tokens[index].token_value.operator== paren_open)
                 {
                   in_parens = true;
-                  starting_index = index;
+                  starting_index
+                      = opening_stack->length == 0 ? index : starting_index;
+                  opening_stack->array[opening_stack->length++] = index;
                 }
               if (token_stream.tokens[index].token_value.
                   operator== paren_close)
                 {
-                  in_parens = false;
+                  closing_stack->array[closing_stack->length++] = index;
+                  if (opening_stack->length == closing_stack->length)
+                    {
+                      opening_stack->length = closing_stack->length = 0;
+                      in_parens = false;
+                    }
                 }
             }
           if (!in_parens)
@@ -277,6 +299,9 @@ calc_token_parens (TokenStream token_stream)
         }
 
       double answer = calc_token_arithmetic (*new_token_stream);
+
+      free (opening_stack);
+      free (closing_stack);
       free (new_token_stream->tokens);
       free (new_token_stream);
       return answer;
