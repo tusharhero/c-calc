@@ -39,7 +39,7 @@ typedef struct
   union
   {
     enum Symbol operator;
-    int number;
+    double number;
   } token_value;
   enum
   {
@@ -96,7 +96,8 @@ tokenizer (char *expression)
   const char *digits = "1234567890";
 
   // allocate more memory to tokens.
-  token_stream->tokens = malloc (strlen (expression) * 10);
+  size_t alloc_size = 256;
+  token_stream->tokens = malloc (alloc_size * sizeof (Token));
 
   // allocating memory to a number.
   char *number_string = malloc (strlen (expression) * 2);
@@ -106,14 +107,22 @@ tokenizer (char *expression)
   bool is_digits = false;
   bool is_operator = false;
   char current_character;
-  int source_index = 0, tokens_index = 0, number_index = 0;
-  int string_length = (int)strlen (expression);
+  size_t source_index = 0, tokens_index = 0, number_index = 0;
+  size_t string_length = strlen (expression);
   while (source_index <= string_length)
     {
       current_character = expression[source_index];
 
       is_digits = is_in_set (current_character, digits);
       is_operator = is_in_set (current_character, operators);
+
+      if (alloc_size <= tokens_index)
+        {
+          alloc_size *= 2;
+          token_stream->tokens
+              = realloc (token_stream->tokens, alloc_size * sizeof (Token));
+        }
+
       if (is_operator || (source_index == string_length))
         {
           if (number_index != 0)
@@ -283,8 +292,8 @@ calc_token_parens (TokenStream token_stream)
                       token_stream, starting_index + 1, ending_index);
 
                   new_token_stream->tokens[new_token_stream->number_of_tokens]
-                      = (Token){ .token_value.number = (int)calc_token_parens (
-                                     *sliced_token_stream),
+                      = (Token){ .token_value.number
+                                 = calc_token_parens (*sliced_token_stream),
                                  .tag = number };
                   new_token_stream->number_of_tokens++;
 
