@@ -159,7 +159,7 @@ tokenizer (char *expression)
   return token_stream;
 }
 
-int
+double
 calc_token_arithmetic (TokenStream token_stream)
 {
   enum Symbol current_operation;
