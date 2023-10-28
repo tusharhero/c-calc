@@ -34,7 +34,7 @@ enum Symbol
   paren_close = ')',
 };
 
-typedef struct token
+typedef struct
 {
   union
   {
@@ -46,7 +46,7 @@ typedef struct token
     number, operator} tag;
 } Token;
 
-typedef struct token_stream
+typedef struct
 {
   Token *tokens;
   size_t number_of_tokens;
@@ -91,7 +91,7 @@ slice_token_stream (TokenStream token_stream, size_t starting_index,
 TokenStream *
 tokenizer (char *expression)
 {
-  TokenStream *token_stream = malloc (sizeof (struct token_stream));
+  TokenStream *token_stream = malloc (sizeof (TokenStream));
   const char *operators = "+-*/()";
   const char *digits = "1234567890";
 
@@ -191,6 +191,8 @@ calc_token_arithmetic (TokenStream token_stream)
                 sum /= current_token.token_value.number;
                 break;
               }
+            default:
+              break;
             }
         }
     }
@@ -286,7 +288,6 @@ calc_token_parens (TokenStream token_stream)
                                  .tag = number };
                   new_token_stream->number_of_tokens++;
 
-
                   free (sliced_token_stream->tokens);
                   free (sliced_token_stream);
                   starting_index = -1;
@@ -350,7 +351,7 @@ main (void)
   while ((input_line = get_line ())[0] != 0)
     {
       printf ("%f\n", calc (input_line));
-      free(input_line);
+      free (input_line);
     }
   return 0;
 }
