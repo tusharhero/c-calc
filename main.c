@@ -286,6 +286,8 @@ calc_token_parens (TokenStream token_stream)
                                  .tag = number };
                   new_token_stream->number_of_tokens++;
 
+
+                  free (sliced_token_stream->tokens);
                   free (sliced_token_stream);
                   starting_index = -1;
                 }
@@ -300,7 +302,9 @@ calc_token_parens (TokenStream token_stream)
 
       double answer = calc_token_arithmetic (*new_token_stream);
 
+      free (opening_stack->array);
       free (opening_stack);
+      free (closing_stack->array);
       free (closing_stack);
       free (new_token_stream->tokens);
       free (new_token_stream);
@@ -346,6 +350,7 @@ main (void)
   while ((input_line = get_line ())[0] != 0)
     {
       printf ("%f\n", calc (input_line));
+      free(input_line);
     }
   return 0;
 }
