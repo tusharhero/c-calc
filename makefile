@@ -1,6 +1,6 @@
 test : sanitize run_input
 sanitize : main.c
-	gcc -g3 -lm -fsanitize=address,undefined main.c
+	gcc -g3 -lm -fsanitize=address,undefined -Wall main.c
 build : main.c
 	gcc -Wall -lm main.c
 run : a.out

@@ -18,12 +18,12 @@
 /* C-calc
  A calculator written in C.*/
 
+#include <math.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 
 enum Symbol
 {
@@ -249,7 +249,7 @@ calc_token_arithmetic (TokenStream token_stream)
               }
             case exponentiation:
               {
-                sum = pow(sum,current_token.token_value.number);
+                sum = pow (sum, current_token.token_value.number);
                 break;
               }
             default:
