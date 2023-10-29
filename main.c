@@ -317,8 +317,8 @@ calc_token_parens (TokenStream token_stream)
           if (alloc_size < index)
             {
               alloc_size *= 2;
-              new_token_stream->tokens = xrealloc (new_token_stream->tokens,
-                                                  sizeof (Token) * alloc_size);
+              new_token_stream->tokens = xrealloc (
+                  new_token_stream->tokens, sizeof (Token) * alloc_size);
             }
           if (token_stream.tokens[index].tag == operator)
             {
@@ -455,8 +455,17 @@ int
 main (void)
 {
   char *input_line;
+
+  printf ("C-calc  Copyright (C) 2023  Tushar Maharana\n"
+          "This program comes with ABSOLUTELY NO WARRANTY\n"
+          "This is free software, and you are welcome to redistribute it\n"
+          "under certain conditions of the GNU General Public License version "
+          "3.\n\n"
+          "Hit enter twice to exit.\n\n");
+
   // This allows the program to exit when the user hits enter once.
-  while ((input_line = get_line ())[0] != 0)
+
+  while ((printf ("> "), (input_line = get_line ()))[0] != 0)
     {
       printf ("%f\n", calc (input_line));
       free (input_line);
