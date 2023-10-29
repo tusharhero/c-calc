@@ -5,5 +5,5 @@
 A Calculator written in C.
 
 It will only work for basic arithmetic operators like, =+=, =-= , =*=,
-=/=. And it also supports =(=, =)= but no order of precedence support
+=/=, =^=. And it also supports =(=, =)= but no order of precedence support
 other than that.
