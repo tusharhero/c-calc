@@ -52,12 +52,6 @@ typedef struct
   size_t number_of_tokens;
 } TokenStream;
 
-typedef struct
-{
-  size_t *array;
-  size_t length;
-} Stack;
-
 bool
 is_in_set (char character, const char *set_string)
 {
@@ -226,36 +220,46 @@ get_no_of_parens (TokenStream token_stream)
   return no_of_parens;
 }
 
+/*
+  Recursively calculates expressions with parentheses in them, returns
+  the final value.
+ */
 double
 calc_token_parens (TokenStream token_stream)
 {
+
+  // If we don't have any parenthesis, we can use the simpler method
+  // of calculating only arithmetic parts.
   if (get_no_of_parens (token_stream) == 0)
     {
       return calc_token_arithmetic (token_stream);
     }
   else
     {
+      // We use slice the tokens where we know that we are inside a
+      // parenthesis.
+      // These are for handling "where","what","when" we are inside
+      // the parentheses.
       TokenStream *sliced_token_stream;
       size_t starting_index = -1;
       size_t ending_index = -1;
       bool in_parens = false;
 
+      // We use this to make sure we don't mess up when we have
+      // nested-parentheses.
+      size_t opening_stack_length = 0;
+      size_t closing_stack_length = 0;
+
+      // Make a dynamically allocated TokenStream which we will
+      // recursively pass to this function again.
       size_t alloc_size = 256;
       TokenStream *new_token_stream = malloc (sizeof (TokenStream));
       new_token_stream->tokens = malloc (sizeof (Token) * alloc_size);
       new_token_stream->number_of_tokens = 0;
 
-      Stack *opening_stack = malloc (sizeof (Stack));
-      opening_stack->array
-          = malloc (sizeof (size_t) * token_stream.number_of_tokens);
-      opening_stack->length = 0;
-      Stack *closing_stack = malloc (sizeof (Stack));
-      closing_stack->array
-          = malloc (sizeof (size_t) * token_stream.number_of_tokens);
-      closing_stack->length = 0;
-
       for (size_t index = 0; index < token_stream.number_of_tokens; ++index)
         {
+          // Ensure we have enough memory allocated.
           if (alloc_size < index)
             {
               alloc_size *= 2;
@@ -267,30 +271,43 @@ calc_token_parens (TokenStream token_stream)
               if (token_stream.tokens[index].token_value.operator== paren_open)
                 {
                   in_parens = true;
+
+                  // If the opening_stack->length is 0, it means that
+                  // we are not inside a parentheses already and we
+                  // can start it here.
                   starting_index
-                      = opening_stack->length == 0 ? index : starting_index;
-                  opening_stack->array[opening_stack->length++] = index;
+                      = opening_stack_length == 0 ? index : starting_index;
+
+                  opening_stack_length++;
                 }
               if (token_stream.tokens[index].token_value.
                   operator== paren_close)
                 {
-                  closing_stack->array[closing_stack->length++] = index;
-                  if (opening_stack->length == closing_stack->length)
+                  closing_stack_length++;
+
+                  // if the lengths are equal that means we have
+                  // reached the end.
+                  if (opening_stack_length == closing_stack_length)
                     {
-                      opening_stack->length = closing_stack->length = 0;
+                      opening_stack_length = closing_stack_length = 0;
                       in_parens = false;
                     }
                 }
             }
           if (!in_parens)
             {
+              // If starting_index isn't the default value (-1), it
+              // means that we have encountered a parens last time.
               if (starting_index != (size_t)-1)
                 {
                   ending_index = index;
 
+                  // Slice the window inside the parentheses and use
+                  // calculate its value.
                   sliced_token_stream = slice_token_stream (
                       token_stream, starting_index + 1, ending_index);
 
+                  // Replace the parentheses with it.
                   new_token_stream->tokens[new_token_stream->number_of_tokens]
                       = (Token){ .token_value.number
                                  = calc_token_parens (*sliced_token_stream),
@@ -312,16 +329,15 @@ calc_token_parens (TokenStream token_stream)
 
       double answer = calc_token_arithmetic (*new_token_stream);
 
-      free (opening_stack->array);
-      free (opening_stack);
-      free (closing_stack->array);
-      free (closing_stack);
       free (new_token_stream->tokens);
       free (new_token_stream);
       return answer;
     }
 }
 
+/*
+  Wrapper function for handling tokenizing, and freeing allocations.
+ */
 double
 calc (char *expression)
 {
