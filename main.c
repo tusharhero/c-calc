@@ -123,7 +123,7 @@ TokenStream *
 tokenizer (char *expression)
 {
   const char *operators = "+-*/()";
-  const char *digits = "1234567890";
+  const char *digits = ".1234567890";
 
   // allocate memory for token_stream
   TokenStream *token_stream = xmalloc (sizeof (TokenStream));
@@ -164,7 +164,7 @@ tokenizer (char *expression)
             {
               number_string[number_index + 1] = 0;
               token_stream->tokens[tokens_index].token_value.number
-                  = atoi (number_string);
+                  = strtod (number_string, NULL);
               token_stream->tokens[tokens_index].tag = number;
               is_digits = 0;
               number_index = 0;
@@ -442,7 +442,7 @@ get_line ()
 double
 calc (char *expression)
 {
-  char *clean_expression = clean_line (expression, "+-/*()0123456789");
+  char *clean_expression = clean_line (expression, "+-/*().0123456789");
   TokenStream *token_stream = tokenizer (clean_expression);
   free (clean_expression);
   double calculated_value = calc_token_parens (*token_stream);
