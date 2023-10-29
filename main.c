@@ -366,16 +366,25 @@ calc_token_parens (TokenStream token_stream)
 }
 
 /*
-  Wrapper function for handling tokenizing, and freeing allocations.
+  Return pointer to cleaned line string, with only the characters which are
+  allowed.
+  The pointer returned needs to be managed separately.
  */
-double
-calc (char *expression)
+char *
+clean_line (char *unclean_line, const char *allowed_chars)
 {
-  TokenStream *token_stream = tokenizer (expression);
-  double calculated_value = calc_token_parens (*token_stream);
-  free (token_stream->tokens);
-  free (token_stream);
-  return calculated_value;
+  size_t length = strlen (unclean_line);
+  char *cleaned_line = malloc (sizeof (char) * (length + 1));
+  size_t cleaned_index = 0;
+  for (size_t i = 0; i < length; ++i)
+    {
+      if (is_in_set (unclean_line[i], allowed_chars))
+        {
+          cleaned_line[cleaned_index++] = unclean_line[i];
+        }
+    }
+  cleaned_line[cleaned_index] = 0;
+  return cleaned_line;
 }
 
 /*
@@ -401,6 +410,21 @@ get_line ()
     }
   line[size] = 0;
   return line;
+}
+
+/*
+  Wrapper function for handling tokenizing, and freeing allocations.
+ */
+double
+calc (char *expression)
+{
+  char *clean_expression = clean_line (expression, "+-/*()0123456789");
+  TokenStream *token_stream = tokenizer (clean_expression);
+  free (clean_expression);
+  double calculated_value = calc_token_parens (*token_stream);
+  free (token_stream->tokens);
+  free (token_stream);
+  return calculated_value;
 }
 
 int
