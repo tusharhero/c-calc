@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 enum Symbol
 {
@@ -30,6 +31,7 @@ enum Symbol
   subtraction = '-',
   multiplication = '*',
   division = '/',
+  exponentiation = '^',
   paren_open = '(',
   paren_close = ')',
 };
@@ -122,7 +124,7 @@ slice_token_stream (TokenStream token_stream, size_t starting_index,
 TokenStream *
 tokenizer (char *expression)
 {
-  const char *operators = "+-*/()";
+  const char *operators = "+-*/^()";
   const char *digits = ".1234567890";
 
   // allocate memory for token_stream
@@ -243,6 +245,11 @@ calc_token_arithmetic (TokenStream token_stream)
             case division:
               {
                 sum /= current_token.token_value.number;
+                break;
+              }
+            case exponentiation:
+              {
+                sum = pow(sum,current_token.token_value.number);
                 break;
               }
             default:
@@ -442,7 +449,7 @@ get_line ()
 double
 calc (char *expression)
 {
-  char *clean_expression = clean_line (expression, "+-/*().0123456789");
+  char *clean_expression = clean_line (expression, "+-/*()^.0123456789");
   TokenStream *token_stream = tokenizer (clean_expression);
   free (clean_expression);
   double calculated_value = calc_token_parens (*token_stream);

@@ -1,8 +1,8 @@
 test : sanitize run_input
 sanitize : main.c
-	gcc -g3 -fsanitize=address,undefined main.c
+	gcc -g3 -lm -fsanitize=address,undefined main.c
 build : main.c
-	gcc -Wall main.c
+	gcc -Wall -lm main.c
 run : a.out
 	./a.out
 run_input: input a.out
@@ -10,4 +10,4 @@ run_input: input a.out
 clean : a.out
 	rm a.out
 pedantic: main.c 
-	gcc -pedantic main.c
+	gcc -pedantic -lm main.c
