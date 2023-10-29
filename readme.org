@@ -3,13 +3,7 @@
 #+email: tusharhero@sdf.org
 * C-calc
 A Calculator written in C.
-* Specs
-It will only work for basic arithmetic operators like, =+=, =-= , =*=, =/=.
-* Algorithm
-We will ask the user for the expression they want to evaluate.
-Let's say its some thing simple, like,
-$$ 5 + 2 - 1$$
-Which would be a string in our code, =5 + 2 - 1=. We will ignore any
-spaces or white space. Hence, our user inputted string would become,
-=5+2-1=. After this, we will need to identify the operators? And then
-the operands for them.
+
+It will only work for basic arithmetic operators like, =+=, =-= , =*=,
+=/=. And it also supports =(=, =)= but no order of precedence support
+other than that.
