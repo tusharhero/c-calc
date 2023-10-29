@@ -55,6 +55,30 @@ typedef struct
   size_t number_of_tokens;
 } TokenStream;
 
+/*
+  malloc() but with error handling.
+ */
+void *
+xmalloc (size_t size)
+{
+  void *value = malloc (size);
+  if (value == 0)
+    printf ("virtual memory exhausted");
+  return value;
+}
+
+/*
+  realloc() but with error handling.
+ */
+void *
+xrealloc (void *ptr, size_t size)
+{
+  void *value = realloc (ptr, size);
+  if (value == 0)
+    printf ("virtual memory exhausted");
+  return value;
+}
+
 bool
 is_in_set (char character, const char *set_string)
 {
@@ -78,8 +102,8 @@ slice_token_stream (TokenStream token_stream, size_t starting_index,
 {
 
   size_t alloc_size = token_stream.number_of_tokens;
-  TokenStream *sliced_token_stream = malloc (sizeof (TokenStream));
-  sliced_token_stream->tokens = malloc (sizeof (Token) * alloc_size);
+  TokenStream *sliced_token_stream = xmalloc (sizeof (TokenStream));
+  sliced_token_stream->tokens = xmalloc (sizeof (Token) * alloc_size);
   sliced_token_stream->number_of_tokens = ending_index - starting_index;
 
   for (size_t index = 0; index < sliced_token_stream->number_of_tokens;
@@ -102,14 +126,14 @@ tokenizer (char *expression)
   const char *digits = "1234567890";
 
   // allocate memory for token_stream
-  TokenStream *token_stream = malloc (sizeof (TokenStream));
+  TokenStream *token_stream = xmalloc (sizeof (TokenStream));
 
   // allocate memory for tokens.
   size_t alloc_size = 256;
-  token_stream->tokens = malloc (alloc_size * sizeof (Token));
+  token_stream->tokens = xmalloc (alloc_size * sizeof (Token));
 
   // allocating memory for number strings.
-  char *number_string = malloc (strlen (expression) * 2);
+  char *number_string = xmalloc (strlen (expression) * 2);
 
   // loop through the expression, and put all the tokens seperately in
   // the tokens array in our struct.
@@ -130,7 +154,7 @@ tokenizer (char *expression)
         {
           alloc_size *= 2;
           token_stream->tokens
-              = realloc (token_stream->tokens, alloc_size * sizeof (Token));
+              = xrealloc (token_stream->tokens, alloc_size * sizeof (Token));
         }
 
       if (is_operator || (source_index == string_length))
@@ -145,7 +169,7 @@ tokenizer (char *expression)
               is_digits = 0;
               number_index = 0;
               free (number_string);
-              number_string = malloc (strlen (expression) * 2);
+              number_string = xmalloc (strlen (expression) * 2);
             }
           else
             {
@@ -283,8 +307,8 @@ calc_token_parens (TokenStream token_stream)
       // Make a dynamically allocated TokenStream which we will
       // recursively pass to this function again.
       size_t alloc_size = 256;
-      TokenStream *new_token_stream = malloc (sizeof (TokenStream));
-      new_token_stream->tokens = malloc (sizeof (Token) * alloc_size);
+      TokenStream *new_token_stream = xmalloc (sizeof (TokenStream));
+      new_token_stream->tokens = xmalloc (sizeof (Token) * alloc_size);
       new_token_stream->number_of_tokens = 0;
 
       for (size_t index = 0; index < token_stream.number_of_tokens; ++index)
@@ -293,7 +317,7 @@ calc_token_parens (TokenStream token_stream)
           if (alloc_size < index)
             {
               alloc_size *= 2;
-              new_token_stream->tokens = realloc (new_token_stream->tokens,
+              new_token_stream->tokens = xrealloc (new_token_stream->tokens,
                                                   sizeof (Token) * alloc_size);
             }
           if (token_stream.tokens[index].tag == operator)
@@ -374,7 +398,7 @@ char *
 clean_line (char *unclean_line, const char *allowed_chars)
 {
   size_t length = strlen (unclean_line);
-  char *cleaned_line = malloc (sizeof (char) * (length + 1));
+  char *cleaned_line = xmalloc (sizeof (char) * (length + 1));
   size_t cleaned_index = 0;
   for (size_t i = 0; i < length; ++i)
     {
@@ -395,7 +419,7 @@ char *
 get_line ()
 {
   size_t alloc_size = 256;
-  char *line = malloc (sizeof (char) * alloc_size);
+  char *line = xmalloc (sizeof (char) * alloc_size);
   size_t size = 0;
   int character;
   while ((character = getchar ()) != '\n' && character != EOF)
@@ -403,7 +427,7 @@ get_line ()
       if (size > alloc_size)
         {
           alloc_size *= 2;
-          line = realloc (line, sizeof (char) * alloc_size);
+          line = xrealloc (line, sizeof (char) * alloc_size);
         }
       line[size] = character;
       ++size;
