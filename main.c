@@ -135,7 +135,7 @@ tokenizer (char *expression)
   token_stream->tokens = xmalloc (alloc_size * sizeof (Token));
 
   // allocating memory for number strings.
-  char *number_string = xmalloc (strlen (expression) * 2);
+  char *number_string = xmalloc (strlen (expression) * 3);
 
   // loop through the expression, and put all the tokens seperately in
   // the tokens array in our struct.
