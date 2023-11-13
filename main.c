@@ -58,6 +58,17 @@ typedef struct
 } TokenStream;
 
 /*
+  Exit when panic.
+ */
+void
+panic (const char *msg)
+{
+  fflush (stdout);
+  fprintf (stderr, "%s\n", msg);
+  exit (1);
+}
+
+/*
   malloc() but with error handling.
  */
 void *
@@ -65,7 +76,7 @@ xmalloc (size_t size)
 {
   void *value = malloc (size);
   if (value == 0)
-    printf ("virtual memory exhausted");
+    panic ("Virtual memory exhausted!");
   return value;
 }
 
@@ -77,7 +88,7 @@ xrealloc (void *ptr, size_t size)
 {
   void *value = realloc (ptr, size);
   if (value == 0)
-    printf ("virtual memory exhausted");
+    panic ("Virtual memory exhausted!");
   return value;
 }
 
