@@ -7,3 +7,19 @@ A Calculator written in C.
 It will only work for basic arithmetic operators like, =+=, =-= , =*=,
 =/=, =^=. And it also supports =(= and =)= (parenthesis) but no order
 of precedence support other than that.
+* Sample session
+#+begin_example
+./a.out
+C-calc  Copyright (C) 2023  Tushar Maharana
+This program comes with ABSOLUTELY NO WARRANTY
+This is free software, and you are welcome to redistribute it
+under certain conditions of the GNU General Public License version 3.
+
+Hit enter twice to exit.
+
+> 1+2*(3+4)/(1-3)
+-10.500000
+> 1+23*3-27
+45.000000
+> ⏎                                                                                                                                                                                           
+#+end_example
