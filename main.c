@@ -442,7 +442,7 @@ get_line ()
   int character;
   while ((character = getchar ()) != '\n' && character != EOF)
     {
-      if (size > alloc_size)
+      if (alloc_size < size)
         {
           alloc_size *= 2;
           line = xrealloc (line, sizeof (char) * alloc_size);
